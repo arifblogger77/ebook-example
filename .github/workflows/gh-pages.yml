@@ -1,0 +1,38 @@
+name: 'deploy webiste and ebooks'
+
+on:
+  push:
+    branches:
+      - main # branch name to trigger deployment
+
+jobs:
+  job_deploy_website:
+    name: 'deploy website'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true  # Fetch Hugo themes (true OR recursive)
+        fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Installing 
+      run: npm install honkit --save-dev
+
+    - name: Build
+      run: |
+        npx honkit build
+        cp ./CNAME _book/CNAME
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      # If you're changing the branch from main,
+      # also change the `main` in `refs/heads/main`
+      # below accordingly.
+      with:
+        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        publish_dir: ./_book
